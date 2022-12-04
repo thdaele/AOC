@@ -113,14 +113,14 @@ def start():
     test = here.parent / "tests" / str(year) / str(day).zfill(2) / "a.txt"
     if not test.exists():
         test.parent.mkdir(parents=True, exist_ok=True)
-        test.write_text("\n-\n-\n")
+        test.write_text("\n\n\n")
     if block:
         blocker()
     data = get_data(day=day, year=year, block=True)
     set_docstrings([src])
     puzzle = Puzzle(year, day)
-    if test.read_text() == "\n-\n-\n":
-        test.write_text("{}\n-\n-\n".format(puzzle.example_data))
+    if test.read_text() == "\n\n\n":
+        test.write_text("{}\n\n\n".format(puzzle.example_data))
     webbrowser.open(puzzle.url)
 
 
