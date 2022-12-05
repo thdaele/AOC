@@ -2,12 +2,11 @@
 --- Day 4: Camp Cleanup ---
 https://adventofcode.com/2022/day/4
 """
-from aocd.models import Puzzle
 
 
-def part_a(puzzle: Puzzle):
+def part_a(data):
     score = 0
-    for line in puzzle.input_data.splitlines():
+    for line in data.splitlines():
         elf1, elf2 = line.split(",")
         l1, r1 = elf1.split("-")
         l1, r1 = int(l1), int(r1)
@@ -20,9 +19,9 @@ def part_a(puzzle: Puzzle):
     return score
 
 
-def part_b(puzzle: Puzzle):
+def part_b(data):
     score = 0
-    for line in puzzle.input_data.splitlines():
+    for line in data.splitlines():
         elf1, elf2 = line.split(",")
         l1, r1 = elf1.split("-")
         l1, r1 = int(l1), int(r1)

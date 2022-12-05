@@ -4,8 +4,6 @@ https://adventofcode.com/2022/day/2
 """
 from enum import Enum
 
-from aocd.models import Puzzle
-
 
 class Options(Enum):
     A = X = ROCK = 1
@@ -21,9 +19,9 @@ def loses(a: Options, b: Options) -> bool:
     return wins(b, a)
 
 
-def part_a(puzzle: Puzzle):
+def part_a(data):
     score = 0
-    for line in puzzle.input_data.splitlines():
+    for line in data.splitlines():
         elf, player = line.split()
         elf = Options[elf]
         player = Options[player]
@@ -36,9 +34,9 @@ def part_a(puzzle: Puzzle):
     return score
 
 
-def part_b(puzzle: Puzzle):
+def part_b(data):
     score = 0
-    for line in puzzle.input_data.splitlines():
+    for line in data.splitlines():
         elf, outcome = line.split()
         elf = Options[elf]
 

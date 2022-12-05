@@ -100,14 +100,11 @@ def start():
         src.parent.mkdir()
         src.parent.joinpath("__init__.py").touch()
     src.write_text(dedent('''\
-        from aocd.models import Puzzle
-        
-        
-        def part_a(puzzle: Puzzle):
+        def part_a(data):
             pass
         
         
-        def part_b(puzzle: Puzzle):
+        def part_b(data):
             pass
     '''))
     test = here.parent / "tests" / str(year) / str(day).zfill(2) / "a.txt"

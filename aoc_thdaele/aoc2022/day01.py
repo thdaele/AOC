@@ -2,7 +2,6 @@
 --- Day 1: Calorie Counting ---
 https://adventofcode.com/2022/day/1
 """
-from aocd.models import Puzzle
 
 
 def calorie_list(input_data):
@@ -12,11 +11,11 @@ def calorie_list(input_data):
     return calories
 
 
-def part_a(puzzle: Puzzle):
-    return max(calorie_list(puzzle.input_data))
+def part_a(data):
+    return max(calorie_list(data))
 
 
-def part_b(puzzle: Puzzle):
-    calories = calorie_list(puzzle.input_data)
+def part_b(data):
+    calories = calorie_list(data)
     calories = sorted(calories, reverse=True)
     return sum(calories[:3])
