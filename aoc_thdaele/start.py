@@ -100,6 +100,8 @@ def start():
         src.parent.mkdir()
         src.parent.joinpath("__init__.py").touch()
     src.write_text(dedent('''\
+    
+    
         def part_a(data):
             pass
         
