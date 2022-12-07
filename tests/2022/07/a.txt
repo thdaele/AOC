@@ -1,0 +1,4 @@
+$ system-update --please --pretty-please-with-sugar-on-top
+Error: No space left on device
+
+
