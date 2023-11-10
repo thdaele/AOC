@@ -272,3 +272,8 @@ poetry.toml
 
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,pycharm+all,python
+
+
+# Added by cargo
+
+/target
