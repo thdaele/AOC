@@ -1,9 +1,9 @@
 import argparse
 from datetime import datetime
 
-from aocd import AOC_TZ
+from aocd.utils import AOC_TZ
 
-from aoc_thdaele import solve, solveAndSubmit
+from Python import solve, solveAndSubmit
 
 
 def main():

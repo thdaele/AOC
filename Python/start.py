@@ -109,7 +109,7 @@ def start():
         def part_b(data):
             pass
     '''))
-    test = here.parent / "tests" / str(year) / str(day).zfill(2) / "a.txt"
+    test = here / "tests" / str(year) / str(day).zfill(2) / "a.txt"
     if not test.exists():
         test.parent.mkdir(parents=True, exist_ok=True)
         test.write_text("\n\n\n")

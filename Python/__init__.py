@@ -4,7 +4,7 @@ from aocd.models import Puzzle
 
 
 def _solve(year, day, data):
-    mod_name = "aoc_thdaele.aoc{}.day{:02d}".format(year, day)
+    mod_name = "Python.aoc{}.day{:02d}".format(year, day)
     mod = importlib.import_module(mod_name)
 
     a = mod.part_a(data)
@@ -14,7 +14,7 @@ def _solve(year, day, data):
 
 def solve(year, day):
     puzzle = Puzzle(year, day)
-    a, b = _solve(year, day, puzzle.example_data)
+    a, b = _solve(year, day, puzzle.input_data)
     print(a, b)
 
 
