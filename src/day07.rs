@@ -16,7 +16,7 @@ pub fn input_generator(input: &str) -> HashMap<String, Instruction> {
     for line in input.lines() {
         let mut tokens = line.split("->");
 
-        let mut tokens_first_part :Vec<&str> = tokens.next().unwrap().trim().split(' ').collect();
+        let tokens_first_part :Vec<&str> = tokens.next().unwrap().trim().split(' ').collect();
         let register = tokens.next().unwrap().trim();
         if tokens_first_part.len() == 1 {
             let reg: String = register.parse().unwrap();
