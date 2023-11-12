@@ -77,8 +77,9 @@ pub fn recursion(input: &HashMap<String, Instruction>, memo: &mut HashMap<String
 
 #[aoc(day7, part2)]
 pub fn solve_part2(input: &HashMap<String, Instruction>) -> u16 {
+    let result_part1 = solve_part1(input);
     let mut memo: HashMap<String, u16> = HashMap::new();
-    memo.insert(String::from("b"), 16076);
+    memo.insert(String::from("b"), result_part1);
 
     recursion(input, &mut memo, &String::from('a'))
 }
