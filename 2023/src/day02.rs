@@ -1,3 +1,4 @@
+use std::cmp::max;
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[derive(Default)]
@@ -60,15 +61,9 @@ fn part2(input: &[Game]) -> usize {
         let mut green = 0;
         let mut blue = 0;
         for color_set in &game.color_set {
-            if color_set.red > red {
-                red = color_set.red;
-            }
-            if color_set.green > green {
-                green = color_set.green;
-            }
-            if color_set.blue > blue {
-                blue = color_set.blue;
-            }
+            red = max(red, color_set.red);
+            green = max(green, color_set.green);
+            blue = max(blue, color_set.blue);
         }
         result += red * blue * green;
     }
