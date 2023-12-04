@@ -93,7 +93,6 @@ fn part2(input: &(Vec<Vec<Number>>, Vec<Vec<usize>>)) -> usize {
             }
         }
     }
-
     result
 }
 
