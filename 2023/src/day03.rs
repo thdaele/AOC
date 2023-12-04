@@ -34,20 +34,20 @@ fn parse(input: &str, part2: bool) -> (Vec<Vec<Number>>, Vec<Vec<usize>>) {
     let mut numbers = vec![];
     let mut symbols = vec![];
 
+    let re_numbers = Regex::new(r"\d+").unwrap();
+    let re_symbols = match part2 {
+        false => Regex::new(r"[^0-9.]").unwrap(),
+        true => Regex::new(r"[*]").unwrap()
+    };
     for line in input.lines() {
-        let re = Regex::new(r"\d+").unwrap();
-        let line_numbers = re.find_iter(line)
+        let line_numbers = re_numbers.find_iter(line)
             .map(|digit| Number{
                 value: digit.as_str().parse().unwrap(),
                 index_range: digit.start().saturating_sub(1)..=digit.end()
             }).collect();
         numbers.push(line_numbers);
 
-        let re = match part2 {
-            false => Regex::new(r"[^0-9.]").unwrap(),
-            true => Regex::new(r"[*]").unwrap()
-        };
-        let line_symbols = re.find_iter(line)
+        let line_symbols = re_symbols.find_iter(line)
             .map(|symbol| symbol.start())
             .collect();
         symbols.push(line_symbols);
