@@ -1,4 +1,5 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 
 struct Card {
@@ -52,16 +53,18 @@ fn part1(input: &[Card]) -> usize {
 
 #[aoc(day4, part2)]
 fn part2(input: &[Card]) -> usize {
-    let mut copies: HashMap<usize, usize> = HashMap::new();
+    let mut copies = vec![0usize; input.len()];
     for card in input {
         let card_count = card.count();
-        let current_count = copies.get(&card.id).unwrap_or(&0) + 1;
+        let current_count = copies.get(card.id - 1).unwrap() + 1;
         for i in card.id + 1..card.id + 1 + card_count {
-            let card_count = copies.entry(i).or_insert(0);
+            let card_count = copies.get_mut(i - 1).unwrap();
             *card_count += current_count;
         }
     }
-    copies.values().sum::<usize>() + input.len()
+    // Copies contains the amount of copies per card
+    // We add the amount of original cards to obtain the final answer
+    copies.iter().sum::<usize>() + input.len()
 }
 
 
