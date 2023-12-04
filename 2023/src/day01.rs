@@ -14,17 +14,13 @@ pub fn solve_part1(input: &str) -> u32 {
 #[aoc(day1, part2)]
 pub fn solve_part2(input: &str) -> u32 {
     let digits = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-    let mut lines: Vec<String> = input.lines().map(|s| s.to_string()).collect();
+    let mut input = input.to_string();
 
-    for i in 0..lines.len() {
-        for (index, digit) in digits.iter().enumerate() {
-            let line = lines.get(i).unwrap();
-            let str = format!("{}{}{}", digit, index + 1, digit);
-            lines[i] = line.replace(digit, str.as_str());
-        }
+    for (index, digit) in digits.iter().enumerate() {
+        let str = format!("{}{}{}", digit, index + 1, digit);
+        input = input.replace(digit, str.as_str());
     }
-    let string = lines.join("\n");
-    solve_part1(string.as_str())
+    solve_part1(input.as_str())
 }
 
 #[cfg(test)]
