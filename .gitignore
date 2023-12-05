@@ -1,4 +1,6 @@
+# Ignore inputs for my Rust solutions
 **/input/
+# Ignore inputs for my Python solutions
 **/tests/
 
 # Created by https://www.toptal.com/developers/gitignore/api/linux,python,jetbrains+all,rust
