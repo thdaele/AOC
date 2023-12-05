@@ -1,3 +1,4 @@
+use std::cmp::min;
 use std::ops::Range;
 
 use aoc_runner_derive::{aoc, aoc_generator};
@@ -134,11 +135,30 @@ fn part1(input: &Almanac) -> usize {
 
 #[aoc(day5, part2)]
 fn part2(input: &Almanac) -> usize {
-    let ranges: Vec<Range<usize>> = input.seeds.chunks(2).map(|range| range[0]..range[0]+range[1]).collect();
+    let ranges: Vec<Range<usize>> = input.seeds
+        .chunks(2)
+        .map(|range| range[0]..range[0]+range[1])
+        .collect();
 
-    let mut result = update_range(ranges, input);
-    result.sort_by_key(|k| k.start);
-    result.first().unwrap().start
+    let result = update_range(ranges, input);
+    result.iter().min_by_key(|k| k.start).unwrap().start
+}
+
+#[aoc(day5, part2, bruteforce)]
+fn part2_bruteforce(input: &Almanac) -> usize {
+    let ranges: Vec<Range<usize>> = input.seeds
+        .chunks(2)
+        .map(|range| range[0]..range[0]+range[1])
+        .collect();
+    let mut result = usize::MAX;
+    for range in ranges {
+        let range_min = range.into_iter()
+            .map(|seed| update_seed(seed, input))
+            .min()
+            .unwrap();
+        result = min(result, range_min);
+    }
+    result
 }
 
 
