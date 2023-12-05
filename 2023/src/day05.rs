@@ -18,6 +18,11 @@ fn apply_mapping(seed: usize, entry: &MappingEntry) -> usize {
     (seed - entry.source.start) + entry.destination.start
 }
 
+#[inline]
+fn apply_mapping_rev(location: usize, entry: &MappingEntry) -> usize {
+    (location - entry.destination.start) + entry.source.start
+}
+
 fn update_seed(mut seed: usize, almanac: &Almanac) -> usize {
     // Mappings are in the correct order so we can just loop over the mappings and update the seed
     for mapping in &almanac.mappings {
@@ -29,6 +34,18 @@ fn update_seed(mut seed: usize, almanac: &Almanac) -> usize {
         }
     }
     seed
+}
+
+fn update_location(mut location: usize, almanac: &Almanac) -> usize {
+    for mapping in almanac.mappings.iter().rev() {
+        for entry in mapping {
+            if entry.destination.contains(&location) {
+                location = apply_mapping_rev(location, entry);
+                break;
+            }
+        }
+    }
+    location
 }
 
 fn update_range(mut ranges: Vec<Range<usize>>, almanac: &Almanac) -> Vec<Range<usize>> {
@@ -160,6 +177,23 @@ fn part2_bruteforce(input: &Almanac) -> usize {
     }
     result
 }
+
+#[aoc(day5, part2, backward_bruteforce)]
+fn part2_backward_bruteforce(input: &Almanac) -> usize {
+    let ranges: Vec<Range<usize>> = input.seeds
+        .chunks(2)
+        .map(|range| range[0]..range[0]+range[1])
+        .collect();
+    for location in 1..usize::MAX {
+        let seed = update_location(location, input);
+
+        if ranges.iter().any(|range| range.contains(&seed)) {
+            return location;
+        }
+    }
+    unreachable!()
+}
+
 
 
 #[cfg(test)]
