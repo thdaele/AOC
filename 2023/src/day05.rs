@@ -41,7 +41,7 @@ fn update_range(mut ranges: Vec<Range<usize>>, almanac: &Almanac) -> Vec<Range<u
             // So we can just loop and update the ranges
             for entry in mapping {
                 // Check if we still need to map the range further
-                if range.start < range.end {
+                if range.start < range.end && range.end >= entry.source.start {
                     new_ranges.extend(range.consume_and_map(entry));
                 } else {
                     break;
