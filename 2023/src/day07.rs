@@ -63,10 +63,12 @@ impl Hand {
             cards[*card as usize] += 1
         }
         if jokers != 0 {
+            // Remove jokers, they will be added to the card with highest count
             cards[0] = 0;
         }
         cards.sort_unstable();
         cards.reverse();
+        // Add jokers to the card with the highest count
         match cards[0] + jokers {
             5 => HandType::Five,
             4 => HandType::Four,
@@ -83,7 +85,7 @@ impl Hand {
     // Some experiments I did to see if the array sort is faster than a fast hashmap
     fn hand_type_hashmap(value: &[u8; 6], jokers: u8) -> HandType {
         let mut cards: FxHashMap<u8, u8> = FxHashMap::default();
-        for card in &value[1..6] {
+        for card in value.iter().skip(1) {
             let count = cards.entry(*card).or_insert(0);
             *count += 1;
         }
