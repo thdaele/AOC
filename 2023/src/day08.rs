@@ -1,14 +1,14 @@
-use std::collections::HashMap;
 use aoc_runner_derive::{aoc, aoc_generator};
 use num::Integer;
 use rayon::prelude::*;
+use rustc_hash::FxHashMap;
 
 #[aoc_generator(day8)]
-fn parse(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
+fn parse(input: &str) -> (Vec<char>, FxHashMap<String, (String, String)>) {
     let (movement, connections) = input.split_once("\n\n").unwrap();
     let movement = movement.chars().collect();
 
-    let mut map = HashMap::new();
+    let mut map = FxHashMap::default();
     for line in connections.lines() {
         let (key, values) = line.split_once('=').unwrap();
         let (left, right) = values.trim().split_once(',').unwrap();
@@ -22,7 +22,7 @@ fn parse(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
     (movement, map)
 }
 
-fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a HashMap<String, (String, String)>, part2: bool) -> usize {
+fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a FxHashMap<String, (String, String)>, part2: bool) -> usize {
     let mut count = 0;
 
     while (part2 || current != "ZZZ") && (!part2 || !current.ends_with('Z')) {
@@ -38,7 +38,7 @@ fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a HashMa
 }
 
 #[aoc(day8, part1)]
-fn part1(input: &(Vec<char>, HashMap<String, (String, String)>)) -> usize {
+fn part1(input: &(Vec<char>, FxHashMap<String, (String, String)>)) -> usize {
     let (movement, connections) = input;
 
     let current = "AAA";
@@ -46,7 +46,7 @@ fn part1(input: &(Vec<char>, HashMap<String, (String, String)>)) -> usize {
 }
 
 #[aoc(day8, part2)]
-fn part2(input: &(Vec<char>, HashMap<String, (String, String)>)) -> usize {
+fn part2(input: &(Vec<char>, FxHashMap<String, (String, String)>)) -> usize {
     let (movement, connections) = input;
 
     let counts: Vec<usize> = connections.par_iter()
