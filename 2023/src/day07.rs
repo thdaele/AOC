@@ -25,7 +25,6 @@ fn get_card_value(card: char, part2: bool) -> u8 {
     }
 }
 
-// #[derive(Eq, PartialEq)]
 struct Hand {
     bid: u32,
     // First value is the hand_type, the following values are the cards in order
