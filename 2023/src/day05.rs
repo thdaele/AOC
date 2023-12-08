@@ -2,6 +2,7 @@ use std::cmp::min;
 use std::ops::Range;
 
 use aoc_runner_derive::{aoc, aoc_generator};
+use rayon::prelude::*;
 
 struct MappingEntry {
     destination: Range<usize>,
@@ -167,15 +168,14 @@ fn part2_bruteforce(input: &Almanac) -> usize {
         .chunks(2)
         .map(|range| range[0]..range[0]+range[1])
         .collect();
-    let mut result = usize::MAX;
-    for range in ranges {
-        let range_min = range.into_iter()
+
+    ranges.par_iter()
+        .map(|range| range.clone()
             .map(|seed| update_seed(seed, input))
             .min()
-            .unwrap();
-        result = min(result, range_min);
-    }
-    result
+            .unwrap()
+        ).min()
+        .unwrap()
 }
 
 #[aoc(day5, part2, backward_bruteforce)]
