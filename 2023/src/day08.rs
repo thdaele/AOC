@@ -1,10 +1,10 @@
-use aoc_runner_derive::{aoc, aoc_generator};
+use aoc_runner_derive::aoc;
 use num::Integer;
 use rayon::prelude::*;
 use rustc_hash::FxHashMap;
 
-#[aoc_generator(day8)]
-fn parse(input: &str) -> (Vec<char>, FxHashMap<String, (String, String)>) {
+// #[aoc_generator(day8)]
+fn parse(input: &str) -> (Vec<char>, FxHashMap<&str, (&str, &str)>) {
     let (movement, connections) = input.split_once("\n\n").unwrap();
     let movement = movement.chars().collect();
 
@@ -16,13 +16,13 @@ fn parse(input: &str) -> (Vec<char>, FxHashMap<String, (String, String)>) {
         let left = left[1..].trim();
         let right = right[..right.len() - 1].trim();
 
-        let connection = (left.to_string(), right.to_string());
-        map.insert(key.trim().to_string(), connection);
+        let connection = (left, right);
+        map.insert(key.trim(), connection);
     }
     (movement, map)
 }
 
-fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a FxHashMap<String, (String, String)>, part2: bool) -> usize {
+fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a FxHashMap<&str, (&str, &str)>, part2: bool) -> usize {
     let mut count = 0;
 
     while (part2 || current != "ZZZ") && (!part2 || !current.ends_with('Z')) {
@@ -38,16 +38,16 @@ fn solve<'a>(mut current: &'a str, movement: &Vec<char>, connections: &'a FxHash
 }
 
 #[aoc(day8, part1)]
-fn part1(input: &(Vec<char>, FxHashMap<String, (String, String)>)) -> usize {
-    let (movement, connections) = input;
+fn part1(input: &str) -> usize {
+    let (movement, connections) = &parse(input);
 
     let current = "AAA";
     solve(current, movement, connections, false)
 }
 
 #[aoc(day8, part2)]
-fn part2(input: &(Vec<char>, FxHashMap<String, (String, String)>)) -> usize {
-    let (movement, connections) = input;
+fn part2(input: &str) -> usize {
+    let (movement, connections) = &parse(input);
 
     let counts: Vec<usize> = connections.par_iter()
         .filter(|(key, _)| key.ends_with('A'))
@@ -91,16 +91,16 @@ XXX = (XXX, XXX)";
 
     #[test]
     fn part1_example1() {
-        assert_eq!(part1(&parse(EXAMPLE_1)), 2);
+        assert_eq!(part1(EXAMPLE_1), 2);
     }
 
     #[test]
     fn part1_example2() {
-        assert_eq!(part1(&parse(EXAMPLE_2)), 6);
+        assert_eq!(part1(EXAMPLE_2), 6);
     }
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse(EXAMPLE_PART2)), 6);
+        assert_eq!(part2(EXAMPLE_PART2), 6);
     }
 }
