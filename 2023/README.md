@@ -9,3 +9,4 @@
 | [Day 06](./src/day06.rs) |  `2µs`  |  `1µs`  |
 | [Day 07](./src/day07.rs) | `103µs` | `92µs`  |
 | [Day 08](./src/day08.rs) | `250µs` | `674µs` |
+| [Day 09](./src/day09.rs) | `203µs` | `210µs` |

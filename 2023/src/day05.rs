@@ -1,4 +1,3 @@
-use std::cmp::min;
 use std::ops::Range;
 
 use aoc_runner_derive::{aoc, aoc_generator};
