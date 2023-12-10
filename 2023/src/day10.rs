@@ -5,21 +5,21 @@ use num::abs;
 
 #[derive(PartialEq, Debug, Copy, Clone)]
 struct Pos {
-    y: usize,
-    x: usize
+    y: u8,
+    x: u8
 }
 
 impl Pos {
-    fn new(y: usize, x: usize) -> Pos {
+    fn new(y: u8, x: u8) -> Pos {
         Pos { y, x }
     }
 }
 
-impl Add<(i32, i32)> for Pos {
+impl Add<(i8, i8)> for Pos {
     type Output = Pos;
 
-    fn add(self, rhs: (i32, i32)) -> Self::Output {
-        Pos::new((self.y as i32 + rhs.0) as usize, (self.x as i32 + rhs.1) as usize)
+    fn add(self, rhs: (i8, i8)) -> Self::Output {
+        Pos::new((self.y as i8 + rhs.0) as u8, (self.x as i8 + rhs.1) as u8)
     }
 }
 
@@ -74,13 +74,13 @@ impl Tile {
 
 #[inline]
 fn get_tile(map: &[Vec<Tile>], pos: Pos) -> &Tile {
-    map.get(pos.y - 1).unwrap().get(pos.x - 1).unwrap()
+    map.get(pos.y as usize - 1).unwrap().get(pos.x as usize - 1).unwrap()
 }
 
 #[inline]
 fn bound_check(map: &[Vec<Tile>], pos: Pos) -> bool {
-    let y_range = 1..=map.len();
-    let x_range = 1..=map.first().unwrap().len();
+    let y_range = 1..=map.len() as u8;
+    let x_range = 1..=map.first().unwrap().len() as u8;
 
     x_range.contains(&pos.x) && y_range.contains(&pos.y)
 }
@@ -92,11 +92,11 @@ fn parse(input: &str) -> (Vec<Vec<Tile>>, Pos) {
     let mut result = vec![];
     for (y, line) in input.lines().enumerate() {
         // Make y bigger so we can check neighbours and don't have to worry for underflow on usize
-        let y_increased = y + 1;
+        let y_increased = y as u8 + 1;
         let mut grid_line = vec![];
         for (x, char) in line.chars().enumerate() {
             // Make y bigger so we can check neighbours and don't have to worry for underflow on usize
-            let x_increased = x + 1;
+            let x_increased = x as u8 + 1;
             let pos = Pos::new(y_increased, x_increased);
             let north = Pos::new(y_increased - 1, x_increased);
             let east = Pos::new(y_increased, x_increased + 1);
@@ -130,7 +130,7 @@ fn parse(input: &str) -> (Vec<Vec<Tile>>, Pos) {
 fn part1(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     let (map_input, start) = input;
     let map = &mut map_input.clone();
-    let start_tile = map.get_mut(start.y - 1).unwrap().get_mut(start.x - 1).unwrap();
+    let start_tile = map.get_mut(start.y as usize - 1).unwrap().get_mut(start.x as usize - 1).unwrap();
     start_tile.connect_start(map_input);
 
     let start_tile = get_tile(map, *start);
@@ -156,7 +156,7 @@ fn part1(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
 fn part2(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     let (map_input, start) = input;
     let map = &mut map_input.clone();
-    let start_tile = map.get_mut(start.y - 1).unwrap().get_mut(start.x - 1).unwrap();
+    let start_tile = map.get_mut(start.y as usize - 1).unwrap().get_mut(start.x as usize - 1).unwrap();
     start_tile.connect_start(map_input);
 
     let start_tile = get_tile(map, *start);
@@ -194,7 +194,7 @@ fn part2(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     let mut area = 0;
     let mut j = vertices.last().unwrap();
     for pos in &vertices {
-        area += (j.x + pos.x) as i32 * (j.y as i32 - pos.y as i32);
+        area += (j.x as i32 + pos.x as i32) * (j.y as i32 - pos.y as i32);
         j = pos;
     }
     let area = abs(area / 2);
