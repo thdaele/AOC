@@ -27,7 +27,8 @@ impl Add<(i8, i8)> for Pos {
 struct Tile {
     pos: Pos,
     neighbours: Option<(Pos, Pos)>,
-    corner: bool
+    corner: bool,
+    char: char
 }
 
 impl Tile {
@@ -103,14 +104,14 @@ fn parse(input: &str) -> (Vec<Vec<Tile>>, Pos) {
             let south = Pos::new(y_increased + 1, x_increased);
             let west = Pos::new(y_increased, x_increased - 1);
             let tile = match char {
-                '|' => Tile{pos, neighbours: Some((north, south)), corner: false},
-                '-' => Tile{pos, neighbours: Some((east, west)), corner: false},
-                'L' => Tile{pos, neighbours: Some((north, east)), corner: true},
-                'J' => Tile{pos, neighbours: Some((north, west)), corner: true},
-                '7' => Tile{pos, neighbours: Some((south, west)), corner: true},
-                'F' => Tile{pos, neighbours: Some((south, east)), corner: true},
-                '.' => Tile{pos, neighbours: None, corner: false},
-                'S' => Tile{pos, neighbours: None, corner: false},
+                '|' => Tile{pos, neighbours: Some((north, south)), corner: false, char},
+                '-' => Tile{pos, neighbours: Some((east, west)), corner: false, char},
+                'L' => Tile{pos, neighbours: Some((north, east)), corner: true, char},
+                'J' => Tile{pos, neighbours: Some((north, west)), corner: true, char},
+                '7' => Tile{pos, neighbours: Some((south, west)), corner: true, char},
+                'F' => Tile{pos, neighbours: Some((south, east)), corner: true, char},
+                '.' => Tile{pos, neighbours: None, corner: false, char},
+                'S' => Tile{pos, neighbours: None, corner: false, char},
                 _ => unreachable!()
             };
             if char == 'S' {
@@ -152,8 +153,8 @@ fn part1(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     result
 }
 
-#[aoc(day10, part2)]
-fn part2(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
+#[aoc(day10, part2, formula)]
+fn part2_f(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     let (map_input, start) = input;
     let map = &mut map_input.clone();
     let start_tile = map.get_mut(start.y as usize - 1).unwrap().get_mut(start.x as usize - 1).unwrap();
@@ -191,6 +192,7 @@ fn part2(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
     }
     boundary_length += 1;
 
+    // Shoelace formula
     let mut area = 0;
     let mut j = vertices.last().unwrap();
     for pos in &vertices {
@@ -201,6 +203,71 @@ fn part2(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
 
     // Pick's theorem
     (area - (boundary_length / 2) + 1) as u32
+}
+
+#[aoc(day10, part2, boundary_cross)]
+fn part2_bc(input: &(Vec<Vec<Tile>>, Pos)) -> u32 {
+    let (map_input, start) = input;
+    let map = &mut map_input.clone();
+    let start_tile = map.get_mut(start.y as usize - 1).unwrap().get_mut(start.x as usize - 1).unwrap();
+    start_tile.connect_start(map_input);
+
+    // Replace the char on the start tile by the correct letter for the connection
+    let (neighbour1, neighbour2) = start_tile.neighbours.unwrap();
+    start_tile.char = match (neighbour1.y as i8 - neighbour2.y as i8, neighbour1.x as i8 - neighbour2.x as i8) {
+        (-2, 0) => '|',
+        (0, -2) => '-',
+        (-1, -1) => '7',
+        (-1, 1) => 'F',
+        (1, 1) => 'L',
+        (1, -1) => 'J',
+        _ => unreachable!()
+    };
+    let start_tile = get_tile(map, *start);
+
+    let mut lasts = (*start, *start);
+    let mut nexts = start_tile.neighbours.unwrap();
+    let mut vertices = vec![*start];
+    // Check if we close the loop
+    while nexts.0 != nexts.1 {
+        // find next
+        let pos = nexts;
+        let tile0 = get_tile(map, pos.0);
+        let tile1 = get_tile(map, pos.1);
+
+        vertices.insert(0, nexts.0);
+        vertices.push(nexts.1);
+
+        let new_nexts = (tile0.next(lasts.0), tile1.next(lasts.1));
+        lasts = nexts;
+        nexts = new_nexts;
+    }
+    vertices.push(nexts.1);
+
+    // Calculate inside points based on when the boundary is crossed
+    let mut inside_points = 0;
+    for row in map {
+        let mut inside = false;
+        let mut c1 = None;
+        for tile in row {
+            if vertices.contains(&tile.pos) {
+                if tile.char == '|' {
+                    inside = !inside;
+                } else if tile.char == 'F' || tile.char == 'L' {
+                    c1 = Some(tile.char);
+                } else if c1.is_some() {
+                    let c = c1.unwrap();
+                    if (c == 'F' && tile.char == 'J') || (c == 'L' && tile.char == '7') {
+                        inside = !inside;
+                        c1 = None;
+                    }
+                }
+            } else if inside {
+                inside_points += 1;
+            }
+        }
+    }
+    inside_points
 }
 
 
@@ -264,16 +331,19 @@ L7JLJL-JLJLJL--JLJ.L";
 
     #[test]
     fn part2_example_1() {
-        assert_eq!(part2(&parse(EXAMPLE_1_PART_2)), 4);
+        assert_eq!(part2_f(&parse(EXAMPLE_1_PART_2)), 4);
+        assert_eq!(part2_bc(&parse(EXAMPLE_1_PART_2)), 4);
     }
 
     #[test]
     fn part2_example_2() {
-        assert_eq!(part2(&parse(EXAMPLE_2_PART_2)), 8);
+        assert_eq!(part2_f(&parse(EXAMPLE_2_PART_2)), 8);
+        assert_eq!(part2_bc(&parse(EXAMPLE_2_PART_2)), 8);
     }
 
     #[test]
     fn part2_example_3() {
-        assert_eq!(part2(&parse(EXAMPLE_3_PART_2)), 10);
+        assert_eq!(part2_f(&parse(EXAMPLE_3_PART_2)), 10);
+        assert_eq!(part2_bc(&parse(EXAMPLE_3_PART_2)), 10);
     }
 }
