@@ -1,5 +1,5 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::{concat, Itertools};
+use itertools::{concat};
 
 const EXPANSION_FACTOR: u32 = 1_000_000;
 
@@ -84,16 +84,26 @@ fn parse2(input: &str) -> Vec<Pos> {
 
 #[aoc(day11, part1)]
 fn part1(input: &[Pos]) -> u64 {
-    input.iter().combinations(2)
-        .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
-        .sum()
+    // input.iter().combinations(2)
+    //     .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
+    //     .sum()
+    // The following does the exact same thing, but is a lot more efficient
+    input.iter().enumerate()
+        .map(|(i, pos1)|
+            input[0..i].iter().map(|pos2| pos1.distance(pos2)).sum::<u64>()
+        ).sum()
 }
 
 #[aoc(day11, part2)]
 fn part2(input: &[Pos]) -> u64 {
-    input.iter().combinations(2)
-        .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
-        .sum()
+    // input.iter().combinations(2)
+    //     .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
+    //     .sum()
+    // The following does the exact same thing, but is a lot more efficient
+    input.iter().enumerate()
+        .map(|(i, pos1)|
+            input[0..i].iter().map(|pos2| pos1.distance(pos2)).sum::<u64>()
+        ).sum()
 }
 
 
