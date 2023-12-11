@@ -1,9 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::{concat};
 
-const EXPANSION_FACTOR: u32 = 1_000_000;
-
-#[derive(Debug)]
 struct Pos {
     y: u32,
     x: u32
@@ -21,7 +18,8 @@ impl Pos {
     }
 }
 
-fn parse(input: &str, part2: bool) -> Vec<Pos> {
+fn parse(input: &str, expansion_factor: u32) -> Vec<Pos> {
+    let insert_space = expansion_factor - 1;
     let galaxy_pos: Vec<Vec<Pos>> = input.lines().enumerate()
         .map(|(y, line)|
             line.chars().enumerate()
@@ -45,10 +43,10 @@ fn parse(input: &str, part2: bool) -> Vec<Pos> {
             // Expand galaxy
             galaxy_pos.iter_mut()
                 .filter(|pos| pos.y > y)
-                .for_each(|pos| pos.y += if !part2 { 1 } else {EXPANSION_FACTOR - 1});
+                .for_each(|pos| pos.y += insert_space);
 
-            y_size += if !part2 { 1 } else {EXPANSION_FACTOR - 1};
-            y += if !part2 { 1 } else {EXPANSION_FACTOR - 1};
+            y_size += insert_space;
+            y += insert_space;
         }
     }
 
@@ -62,10 +60,10 @@ fn parse(input: &str, part2: bool) -> Vec<Pos> {
             // Expand galaxy
             galaxy_pos.iter_mut()
                 .filter(|pos| pos.x > x)
-                .for_each(|pos| pos.x += if !part2 { 1 } else {EXPANSION_FACTOR - 1});
+                .for_each(|pos| pos.x += insert_space);
 
-            x_size += if !part2 { 1 } else {EXPANSION_FACTOR - 1};
-            x += if !part2 { 1 } else {EXPANSION_FACTOR - 1};
+            x_size += insert_space;
+            x += insert_space;
         }
     }
 
@@ -74,36 +72,34 @@ fn parse(input: &str, part2: bool) -> Vec<Pos> {
 
 #[aoc_generator(day11, part1)]
 fn parse1(input: &str) -> Vec<Pos> {
-    parse(input, false)
+    parse(input, 2)
 }
 
 #[aoc_generator(day11, part2)]
 fn parse2(input: &str) -> Vec<Pos> {
-    parse(input, true)
+    parse(input, 1_000_000)
+}
+
+#[inline]
+fn solve(input: &[Pos]) -> u64 {
+    // input.iter().combinations(2)
+    //     .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
+    //     .sum()
+    // The following does the exact same thing, but is a lot more efficient
+    input.iter().enumerate()
+        .map(|(i, pos1)|
+            input[0..i].iter().map(|pos2| pos1.distance(pos2)).sum::<u64>()
+        ).sum()
 }
 
 #[aoc(day11, part1)]
 fn part1(input: &[Pos]) -> u64 {
-    // input.iter().combinations(2)
-    //     .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
-    //     .sum()
-    // The following does the exact same thing, but is a lot more efficient
-    input.iter().enumerate()
-        .map(|(i, pos1)|
-            input[0..i].iter().map(|pos2| pos1.distance(pos2)).sum::<u64>()
-        ).sum()
+    solve(input)
 }
 
 #[aoc(day11, part2)]
 fn part2(input: &[Pos]) -> u64 {
-    // input.iter().combinations(2)
-    //     .map(|comb| comb.first().unwrap().distance(comb.last().unwrap()))
-    //     .sum()
-    // The following does the exact same thing, but is a lot more efficient
-    input.iter().enumerate()
-        .map(|(i, pos1)|
-            input[0..i].iter().map(|pos2| pos1.distance(pos2)).sum::<u64>()
-        ).sum()
+    solve(input)
 }
 
 
@@ -129,6 +125,7 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse2(EXAMPLE)), 82000210);
+        assert_eq!(part2(&parse(EXAMPLE, 10)), 1030);
+        assert_eq!(part2(&parse(EXAMPLE, 100)), 8410);
     }
 }
