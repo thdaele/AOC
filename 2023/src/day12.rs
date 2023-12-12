@@ -6,7 +6,7 @@ fn parse(input: &str, part2: bool) -> Vec<Record> {
     input.lines()
         .map(|line | {
             let (springs, conditions) = line.split_once(' ').unwrap();
-            let conditions: Box<[u8]> = conditions.split(',').map(|num| num.parse().unwrap()).collect();
+            let conditions = conditions.split(',').map(|num| num.parse().unwrap()).collect();
             let springs = springs.as_bytes();
             if !part2 {
                 Record::new(springs.into(), conditions)
@@ -46,25 +46,26 @@ impl Record {
         if let Some(&result) = self.memoization.get(&key) {
             return result;
         }
-        if springs_index as usize == self.springs.len() {
-            return if (conditions_index as usize == self.conditions.len() && count == 0)
-                || (conditions_index as usize == self.conditions.len() - 1 && self.conditions[conditions_index as usize] == count) {
+        if springs_index == self.springs.len() as u8 {
+            return if (conditions_index == self.conditions.len() as u8 && count == 0)
+                || (conditions_index == self.conditions.len() as u8 - 1 && self.conditions[conditions_index as usize] == count) {
                 1
             } else {
                 0
             }
+        } else if conditions_index == self.conditions.len() as u8 {
+            return self.springs[springs_index as usize..].iter().all(|&char| char == b'.' || char == b'?') as u64
         }
 
         let mut result = 0;
         let char = self.springs[springs_index as usize];
-        if char == b'#' || char == b'?' {
+        if self.conditions[conditions_index as usize] > count && (char == b'#' || char == b'?') {
             result += self.solve(springs_index + 1, conditions_index, count + 1);
         }
         if char == b'.' || char == b'?' {
             if count == 0 {
                 result += self.solve(springs_index + 1, conditions_index, 0);
-            }
-            if (conditions_index as usize) < self.conditions.len() && self.conditions[conditions_index as usize] == count {
+            } else if self.conditions[conditions_index as usize] == count {
                 result += self.solve(springs_index + 1, conditions_index + 1, 0);
             }
         }
