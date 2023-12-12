@@ -33,40 +33,57 @@ fn parse(input: &str, part2: bool) -> Vec<Record> {
 struct Record {
     springs: Box<[u8]>,
     conditions: Box<[u8]>,
-    memoization: FxHashMap<(u8, u8, u8), u64>
+    memoization: FxHashMap<(u8, u8, u8), u64>,
+    count_no_working: u8,
+    sum_conditions: u8
 }
 
 impl Record {
     fn new(springs: Box<[u8]>, conditions: Box<[u8]>) -> Record {
-        Record {springs, conditions, memoization: FxHashMap::default()}
+        let count_no_working = springs.iter().filter(|&&char| char != b'.').count() as u8;
+        let sum_conditions = conditions.iter().sum();
+        Record {springs, conditions, memoization: FxHashMap::default(), count_no_working, sum_conditions}
     }
 
-    fn solve(&mut self, springs_index: u8, conditions_index: u8, count: u8) -> u64 {
+    fn solve(&mut self, springs_index: u8, conditions_index: u8, mut placed_working: u8, count: u8) -> u64 {
         let key = (springs_index, conditions_index, count);
         if let Some(&result) = self.memoization.get(&key) {
             return result;
         }
-        if springs_index == self.springs.len() as u8 {
+
+        if springs_index >= self.springs.len() as u8 {
             return if (conditions_index == self.conditions.len() as u8 && count == 0)
                 || (conditions_index == self.conditions.len() as u8 - 1 && self.conditions[conditions_index as usize] == count) {
                 1
             } else {
                 0
             }
-        } else if conditions_index == self.conditions.len() as u8 {
+        }
+        else if conditions_index == self.conditions.len() as u8 {
             return self.springs[springs_index as usize..].iter().all(|&char| char == b'.' || char == b'?') as u64
         }
+        if self.count_no_working - placed_working < self.sum_conditions {
+            return 0
+        }
+
 
         let mut result = 0;
         let char = self.springs[springs_index as usize];
-        if self.conditions[conditions_index as usize] > count && (char == b'#' || char == b'?') {
-            result += self.solve(springs_index + 1, conditions_index, count + 1);
+        if conditions_index < self.conditions.len() as u8 && self.conditions[conditions_index as usize] > count && (char == b'#' || char == b'?') {
+            result += self.solve(springs_index + 1, conditions_index, placed_working, count + 1);
         }
         if char == b'.' || char == b'?' {
+            let mut skip_char = 1;
+            if char == b'?' {
+                placed_working += 1;
+            } else {
+                let z = (springs_index + 1 != self.springs.len() as u8) as u8;
+                skip_char = self.springs[(springs_index + z) as usize..].iter().take_while(|&&char| char == b'.').count() as u8 + 1;
+            }
             if count == 0 {
-                result += self.solve(springs_index + 1, conditions_index, 0);
-            } else if self.conditions[conditions_index as usize] == count {
-                result += self.solve(springs_index + 1, conditions_index + 1, 0);
+                result += self.solve(springs_index + skip_char, conditions_index, placed_working, 0);
+            } else if conditions_index < self.conditions.len() as u8 && self.conditions[conditions_index as usize] == count {
+                result += self.solve(springs_index + skip_char, conditions_index + 1, placed_working, 0);
             }
         }
         self.memoization.insert(key, result);
@@ -78,7 +95,7 @@ impl Record {
 fn part1(input: &str) -> u64 {
     let mut input = parse(input, false);
     input.par_iter_mut()
-        .map(|record| record.solve(0, 0, 0))
+        .map(|record| record.solve(0, 0, 0,0))
         .sum()
 }
 
@@ -86,7 +103,7 @@ fn part1(input: &str) -> u64 {
 fn part2(input: &str) -> u64 {
     let mut input = parse(input, true);
     input.par_iter_mut()
-        .map(|record| record.solve(0, 0, 0))
+        .map(|record| record.solve(0, 0, 0, 0))
         .sum()
 }
 
