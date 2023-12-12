@@ -54,6 +54,9 @@ impl Record {
             return self.springs[springs_index as usize..].iter().all(|&char| char != b'#') as u64
         }
         if self.count_no_working - placed_working < self.sum_conditions {
+            // Count_no_working = amount of # and ? in the string (precomputed)
+            // Placed working is increased every time a ? is replaced with .
+            // Sum_conditions is the sum of numbers at the end of the line, also pre computed
             // Replace to many ? with . -> not enough ? left to place all the needed #
             return 0
         }
