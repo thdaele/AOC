@@ -1,80 +1,92 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
 use aoc_runner_derive::aoc;
-use itertools::{intersperse, repeat_n};
+use rayon::prelude::*;
+use rustc_hash::FxHashMap;
 
-// #[aoc_generator(day12)]
-fn parse(input: &str) -> Vec<(&[u8], Vec<u32>)> {
+fn parse(input: &str, part2: bool) -> Vec<Record> {
     input.lines()
         .map(|line | {
             let (springs, conditions) = line.split_once(' ').unwrap();
-            let conditions = conditions.split(',').map(|num| num.parse().unwrap()).collect();
-            (springs.as_bytes(), conditions)
+            let conditions: Box<[u8]> = conditions.split(',').map(|num| num.parse().unwrap()).collect();
+            let springs = springs.as_bytes();
+            if !part2 {
+                Record::new(springs.into(), conditions)
+            } else {
+                let springs= [springs; 5].join(&b'?').into();
+                let conditions= conditions.repeat(5).into_boxed_slice();
+                Record::new(springs, conditions)
+            }
+
         })
         .collect()
 }
 
-fn solve<'a>(springs: &'a [u8], conditions: &'a [u32], count: u32, memo: &RefCell<HashMap<(&'a [u8], &'a [u32], u32), u64>>) -> u64 {
-    let key = (springs, conditions, count);
-    if let Some(&result) = memo.borrow().get(&key) {
-        return result;
-    }
-    if springs.is_empty() {
-        return if (conditions.is_empty() && count == 0)
-            || (conditions.len() == 1 && *conditions.first().unwrap() == count) {
-            1
-        } else {
-            0
-        }
+// #[aoc_generator(day12, part1)]
+// fn parse1(input: &str) -> Vec<Record> {
+//     parse(input, false)
+// }
+//
+// #[aoc_generator(day12, part2)]
+// fn parse2(input: &str) -> Vec<Record> {
+//     parse(input, true)
+// }
+
+struct Record {
+    springs: Box<[u8]>,
+    conditions: Box<[u8]>,
+    memoization: FxHashMap<(u8, u8, u8), u64>
+}
+
+impl Record {
+    fn new(springs: Box<[u8]>, conditions: Box<[u8]>) -> Record {
+        Record {springs, conditions, memoization: FxHashMap::default()}
     }
 
-    let mut result = 0;
+    fn solve(&mut self, springs_index: u8, conditions_index: u8, count: u8) -> u64 {
+        let key = (springs_index, conditions_index, count);
+        if let Some(&result) = self.memoization.get(&key) {
+            return result;
+        }
+        if springs_index as usize == self.springs.len() {
+            return if (conditions_index as usize == self.conditions.len() && count == 0)
+                || (conditions_index as usize == self.conditions.len() - 1 && self.conditions[conditions_index as usize] == count) {
+                1
+            } else {
+                0
+            }
+        }
 
-    let char = *springs.first().unwrap();
-    if char == b'#' {
-        result += solve(&springs[1..], conditions, count + 1, memo);
-    } else if char == b'.' {
-        if count == 0 {
-            result += solve(&springs[1..], conditions, 0, memo)
+        let mut result = 0;
+        let char = self.springs[springs_index as usize];
+        if char == b'#' || char == b'?' {
+            result += self.solve(springs_index + 1, conditions_index, count + 1);
         }
-        if !conditions.is_empty() && *conditions.first().unwrap() == count {
-            result += solve(&springs[1..], &conditions[1..], 0, memo)
+        if char == b'.' || char == b'?' {
+            if count == 0 {
+                result += self.solve(springs_index + 1, conditions_index, 0);
+            }
+            if (conditions_index as usize) < self.conditions.len() && self.conditions[conditions_index as usize] == count {
+                result += self.solve(springs_index + 1, conditions_index + 1, 0);
+            }
         }
-    } else if char == b'?' {
-        // assume Damaged
-        result += solve(&springs[1..], conditions, count + 1, memo);
-        // assume Operational
-        if count == 0 {
-            result += solve(&springs[1..], conditions, 0, memo)
-        }
-        if !conditions.is_empty() && *conditions.first().unwrap() == count {
-            result += solve(&springs[1..], &conditions[1..], 0, memo)
-        }
+        self.memoization.insert(key, result);
+        result
     }
-    memo.borrow_mut().insert(key, result);
-    result
 }
 
 #[aoc(day12, part1)]
 fn part1(input: &str) -> u64 {
-    let input = parse(input);
-    input.iter()
-        .map(|(springs, conditions)| solve(springs, conditions, 0, &RefCell::new(HashMap::new())))
+    let mut input = parse(input, false);
+    input.par_iter_mut()
+        .map(|record| record.solve(0, 0, 0))
         .sum()
 }
 
 #[aoc(day12, part2)]
 fn part2(input: &str) -> u64 {
-    let input = parse(input);
-
-    let mut result = 0;
-    for (springs, conditions) in input {
-        let springs: Vec<u8> = intersperse(repeat_n(springs.to_vec(), 5), vec![b'?']).flatten().collect();
-        let conditions: Vec<u32> = repeat_n(conditions, 5).flatten().collect();
-        result += solve(&springs, &conditions, 0, &RefCell::new(HashMap::new()));
-    }
-
-    result
+    let mut input = parse(input, true);
+    input.par_iter_mut()
+        .map(|record| record.solve(0, 0, 0))
+        .sum()
 }
 
 
