@@ -59,7 +59,7 @@ impl Record {
                 0
             }
         }
-        else if conditions_index == self.conditions.len() as u8 {
+        else if conditions_index >= self.conditions.len() as u8 {
             return self.springs[springs_index as usize..].iter().all(|&char| char == b'.' || char == b'?') as u64
         }
         if self.count_no_working - placed_working < self.sum_conditions {
@@ -69,20 +69,23 @@ impl Record {
 
         let mut result = 0;
         let char = self.springs[springs_index as usize];
-        if conditions_index < self.conditions.len() as u8 && self.conditions[conditions_index as usize] > count && (char == b'#' || char == b'?') {
-            result += self.solve(springs_index + 1, conditions_index, placed_working, count + 1);
+        if self.conditions[conditions_index as usize] > count && (char == b'#' || char == b'?') {
+            let mut skip_char = 1;
+            if char == b'#' {
+                skip_char = self.springs[springs_index as usize..].iter().take_while(|&&char| char == b'#').count() as u8;
+            }
+            result += self.solve(springs_index + skip_char, conditions_index, placed_working, count + skip_char);
         }
         if char == b'.' || char == b'?' {
             let mut skip_char = 1;
             if char == b'?' {
                 placed_working += 1;
             } else {
-                let z = (springs_index + 1 != self.springs.len() as u8) as u8;
-                skip_char = self.springs[(springs_index + z) as usize..].iter().take_while(|&&char| char == b'.').count() as u8 + 1;
+                skip_char = self.springs[springs_index as usize..].iter().take_while(|&&char| char == b'.').count() as u8;
             }
             if count == 0 {
                 result += self.solve(springs_index + skip_char, conditions_index, placed_working, 0);
-            } else if conditions_index < self.conditions.len() as u8 && self.conditions[conditions_index as usize] == count {
+            } else if self.conditions[conditions_index as usize] == count {
                 result += self.solve(springs_index + skip_char, conditions_index + 1, placed_working, 0);
             }
         }
