@@ -20,14 +20,13 @@ impl Pos {
 
 fn parse(input: &str, expansion_factor: u32) -> Vec<Pos> {
     let insert_space = expansion_factor - 1;
-    let galaxy_pos: Vec<Vec<Pos>> = input.lines().enumerate()
-        .map(|(y, line)|
+    let mut galaxy_pos: Vec<Pos> = input.lines().enumerate()
+        .flat_map(|(y, line)|
             line.chars().enumerate()
                 .filter(|(_, c)| *c == '#')
                 .map(|(x, _)| Pos::new(y as u32, x as u32))
-                .collect()
+                .collect::<Vec<Pos>>()
         ).collect();
-    let mut galaxy_pos = concat(galaxy_pos);
 
     let mut y_size = galaxy_pos.iter().max_by_key(|pos| pos.y).unwrap().y;
     let mut x_size = galaxy_pos.iter().max_by_key(|pos| pos.x).unwrap().x;
