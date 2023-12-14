@@ -80,7 +80,7 @@ fn score(grid: &[Vec<Rock>], len: u8) -> u32 {
 
 fn transpose(original: &mut Vec<Vec<Rock>>, size: u8) {
     assert!(!original.is_empty());
-    let mut transposed: Vec<Vec<Rock>> = (0..size).map(|_| vec![]).collect();
+    let mut transposed: Vec<Vec<Rock>> = (0..size).map(|_| Vec::with_capacity(size as usize)).collect();
 
     original.iter().enumerate().for_each(|(x, original_column)| {
         original_column.iter()
