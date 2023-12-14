@@ -65,7 +65,7 @@ fn till(grid: &mut [Vec<Rock>], reverse: bool, size: u8) {
     }
 }
 
-fn score(grid: &Vec<Vec<Rock>>, len: u8) -> u32 {
+fn score(grid: &[Vec<Rock>], len: u8) -> u32 {
     grid.iter().map(|column| {
         column.iter()
             .filter_map(|rock| {
@@ -78,7 +78,7 @@ fn score(grid: &Vec<Vec<Rock>>, len: u8) -> u32 {
     }).sum()
 }
 
-fn swap(original: &mut Vec<Vec<Rock>>, size: u8) {
+fn transpose(original: &mut Vec<Vec<Rock>>, size: u8) {
     assert!(!original.is_empty());
     let mut transposed: Vec<Vec<Rock>> = (0..size).map(|_| vec![]).collect();
 
@@ -99,13 +99,13 @@ fn swap(original: &mut Vec<Vec<Rock>>, size: u8) {
 #[allow(dead_code)]
 fn print(grid: &mut Vec<Vec<Rock>>, swap_b: bool, x_len: u8, y_len: u8) {
     if swap_b {
-        swap(grid, y_len);
+        transpose(grid, y_len);
     }
 
     for column in grid.iter() {
         let mut string = "".to_string();
         let mut next = 0;
-        for item in column.iter() {
+        for item in column {
             let y = *match item {
                 Rock::Cube(y) => y,
                 Rock::Round(y) => y
@@ -130,7 +130,7 @@ fn print(grid: &mut Vec<Vec<Rock>>, swap_b: bool, x_len: u8, y_len: u8) {
     }
     println!();
     if swap_b {
-        swap(grid, x_len);
+        transpose(grid, x_len);
     }
 }
 
@@ -152,11 +152,12 @@ fn part2(input: &str) -> u32 {
     let mut cycle = 0;
     cache.insert(grid_clone, cycle);
     let (cycle_start, cycle_end) = loop {
+        // North, West, South, East
         for (b, len) in [(false, y_len), (false, x_len), (true, y_len), (true, x_len)] {
             till(&mut grid, b, len);
 
             // Change column and row
-            swap(&mut grid, len);
+            transpose(&mut grid, len);
         }
         cycle += 1;
         if let Some(cycle_start) = cache.get(&grid) {
