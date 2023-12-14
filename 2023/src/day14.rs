@@ -3,12 +3,12 @@ use rustc_hash::FxHashMap;
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 enum Rock {
-    Round(u32),
-    Cube(u32)
+    Round(u8),
+    Cube(u8)
 }
 
 // #[aoc_generator(day14)]
-fn parse(input: &str) -> (Vec<Vec<Rock>>, (usize, usize)) {
+fn parse(input: &str) -> (Vec<Vec<Rock>>, (u8, u8)) {
     let x_len = input.chars().position(|char| char == '\n').unwrap();
     let mut result: Vec<Vec<Rock>> = (0..x_len).map(|_| vec![]).collect();
 
@@ -20,18 +20,18 @@ fn parse(input: &str) -> (Vec<Vec<Rock>>, (usize, usize)) {
                 .filter(|(_, char)| *char != '.')
                 .for_each(|(x, char)| {
                     let rock = match char {
-                        'O' => Rock::Round(y as u32),
-                        '#' => Rock::Cube(y as u32),
+                        'O' => Rock::Round(y as u8),
+                        '#' => Rock::Cube(y as u8),
                         _ => unreachable!()
                     };
                     result[x].push(rock)
                 })
         });
 
-    (result, (y_len, x_len))
+    (result, (y_len as u8, x_len as u8))
 }
 
-fn till(grid: &mut Vec<Vec<Rock>>, reverse: bool, size: usize) {
+fn till(grid: &mut [Vec<Rock>], reverse: bool, size: u8) {
     if !reverse {
         for column in grid.iter_mut() {
             let mut update_index = 0;
@@ -49,7 +49,7 @@ fn till(grid: &mut Vec<Vec<Rock>>, reverse: bool, size: usize) {
         }
     } else {
         for column in grid.iter_mut() {
-            let mut update_index = size as u32 - 1;
+            let mut update_index = size - 1;
             for rock in column.iter_mut().rev() {
                 match rock {
                     Rock::Round(row) => {
@@ -65,21 +65,20 @@ fn till(grid: &mut Vec<Vec<Rock>>, reverse: bool, size: usize) {
     }
 }
 
-fn score(grid: &Vec<Vec<Rock>>) -> u32 {
-    let len = grid.len() as u32;
+fn score(grid: &Vec<Vec<Rock>>, len: u8) -> u32 {
     grid.iter().map(|column| {
         column.iter()
             .filter_map(|rock| {
                 match rock {
                     Rock::Cube(_) => None,
-                    Rock::Round(y) => Some(len - y)
+                    Rock::Round(y) => Some((len - y) as u32)
                 }
             })
             .sum::<u32>()
     }).sum()
 }
 
-fn swap(original: &mut Vec<Vec<Rock>>, size: usize) {
+fn swap(original: &mut Vec<Vec<Rock>>, size: u8) {
     assert!(!original.is_empty());
     let mut transposed: Vec<Vec<Rock>> = (0..size).map(|_| vec![]).collect();
 
@@ -87,8 +86,8 @@ fn swap(original: &mut Vec<Vec<Rock>>, size: usize) {
         original_column.iter()
             .for_each(|item| {
                 let (y, new_item) = match item {
-                    Rock::Round(y) => (y, Rock::Round(x as u32)),
-                    Rock::Cube(y) => (y, Rock::Cube(x as u32))
+                    Rock::Round(y) => (y, Rock::Round(x as u8)),
+                    Rock::Cube(y) => (y, Rock::Cube(x as u8))
                 };
                 transposed[*y as usize].push(new_item);
             })
@@ -98,7 +97,7 @@ fn swap(original: &mut Vec<Vec<Rock>>, size: usize) {
 }
 
 #[allow(dead_code)]
-fn print(grid: &mut Vec<Vec<Rock>>, swap_b: bool, x_len: usize, y_len: usize) {
+fn print(grid: &mut Vec<Vec<Rock>>, swap_b: bool, x_len: u8, y_len: u8) {
     if swap_b {
         swap(grid, y_len);
     }
@@ -123,7 +122,7 @@ fn print(grid: &mut Vec<Vec<Rock>>, swap_b: bool, x_len: usize, y_len: usize) {
                 Rock::Round(_) => 'O'
             })
         }
-        while next != y_len as u32 {
+        while next != y_len {
             string.push('.');
             next += 1;
         }
@@ -140,7 +139,7 @@ fn part1(input: &str) -> u32 {
     let (mut grid, (y_len, _)) = parse(input);
     till(&mut grid, false, y_len);
 
-    score(&grid)
+    score(&grid, y_len)
 }
 
 #[aoc(day14, part2)]
@@ -150,7 +149,7 @@ fn part2(input: &str) -> u32 {
     let mut cache = FxHashMap::default();
 
     let grid_clone: Vec<Vec<Rock>> = grid.clone();
-    let mut cycle: i64 = 0;
+    let mut cycle = 0;
     cache.insert(grid_clone, cycle);
     let (cycle_start, cycle_end) = loop {
         for (b, len) in [(false, y_len), (false, x_len), (true, y_len), (true, x_len)] {
@@ -174,7 +173,7 @@ fn part2(input: &str) -> u32 {
 
     let (grid, _) = cache.iter().find(|(_, value)| **value == index).unwrap();
 
-    score(grid)
+    score(grid, y_len)
 }
 
 
