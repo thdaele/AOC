@@ -195,11 +195,11 @@ O.#..O.#.#
 
     #[test]
     fn part1_example() {
-        assert_eq!(part1(&EXAMPLE), 136);
+        assert_eq!(part1(EXAMPLE), 136);
     }
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&EXAMPLE), 64);
+        assert_eq!(part2(EXAMPLE), 64);
     }
 }
