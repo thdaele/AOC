@@ -17,33 +17,34 @@ fn part1(input: &str) -> u32 {
 #[aoc(day15, part2)]
 fn part2(input: &str) -> u32 {
     let mut boxes:Vec<Vec<(&str, u8)>> = vec![vec![]; 256];
-    // let mut hashmap: FxHashMap<&str, Vec<u8>> = FxHashMap::default();
-    for line in input.split(',') {
-        if line.contains('=') {
-            let (label_str, focal) = line.split_once('=').unwrap();
+    for substr in input.split(',') {
+        if substr.contains('=') {
+            let (label_str, focal) = substr.split_once('=').unwrap();
             let focal = focal.parse().unwrap();
             let label = hash(label_str);
 
-            // Get hashcode to find the correct box
-            let lens_slots = &mut boxes[label as usize];
-            // Check box for lens with same label_str
-            let pos = lens_slots.iter().position(|lens| lens.0 == label_str);
-            if pos.is_some() {
-                // replace the old lens with the new lens
-                let item = &mut lens_slots[pos.unwrap()];
-                item.1 = focal;
-            } else {
-                lens_slots.push((label_str, focal));
-            }
-        } else {
-            let label_str = &line[..line.len() - 1];
-            let label = hash(label_str);
-
-            // Get hashcode to find the correct box
+            // Use hashcode to find the correct box
             let lens_slots = &mut boxes[label as usize];
             // Check box for lens with same label_str
             let pos = lens_slots.iter().position(|lens| lens.0 == label_str);
             if let Some(pos) = pos {
+                // replace the old lens with the new lens
+                let lens = &mut lens_slots[pos];
+                lens.1 = focal;
+            } else {
+                lens_slots.push((label_str, focal));
+            }
+        } else {
+            // '-' is always the last character, remove it to get the label
+            let label_str = &substr[..substr.len() - 1];
+            let label = hash(label_str);
+
+            // Use hashcode to find the correct box
+            let lens_slots = &mut boxes[label as usize];
+            // Check box for lens with same label_str
+            let pos = lens_slots.iter().position(|lens| lens.0 == label_str);
+            if let Some(pos) = pos {
+                // Remove if the lens was found
                 lens_slots.remove(pos);
             }
         }
