@@ -82,20 +82,10 @@ fn solve(grid: &[Box<[u8]>], start: State, end: Point, same_dir: u8, size: (usiz
     todo.push(Reverse((0u16, start)));
     seen.insert(start, None);
 
-    let mut debug = vec![vec!['.'; x_len]; y_len];
-
     while let Some(Reverse((heat_loss, state))) = todo.pop() {
         if state.position == end && (!part2 || state.last_direction_change >= 4) {
             return heat_loss
         }
-        let debug_char = &mut debug[state.position.y as usize][state.position.x as usize];
-        *debug_char = match state.direction {
-            Some(Direction::North) => '^',
-            Some(Direction::South) => 'v',
-            Some(Direction::East) => '>',
-            Some(Direction::West) => '<',
-            _ => '.'
-        };
 
         let mut next_directions = Vec::with_capacity(4);
         if state.direction.is_none() {
