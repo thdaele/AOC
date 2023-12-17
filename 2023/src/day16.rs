@@ -50,7 +50,7 @@ impl Point {
 }
 
 fn solve(grid: &[&[u8]], start: Point, direction: Direction, size: (usize, usize)) -> usize {
-    assert!(!grid.is_empty());
+    debug_assert!(!grid.is_empty());
     let (y_len, x_len) = size;
     let mut queue = VecDeque::from([(start, direction)]);
     let mut visited: FxHashSet<(Point, Direction)> = FxHashSet::default();
