@@ -134,6 +134,7 @@ fn part2(input: &str) -> u64 {
     let mut queue = VecDeque::new();
     let mut last_seen: FxHashMap<String, u64> = FxHashMap::default();
     let (parent, _) = input.iter().find(|(_, v)| v.destination.contains(&"rx".to_string())).unwrap();
+    // Works bc the nodes in search only have a single incoming connection
     let search: FxHashSet<String> = input.iter().filter_map(|(key, v)| {
         if v.destination.contains(parent) {
             return Some(key.clone())
