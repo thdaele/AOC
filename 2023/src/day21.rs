@@ -184,6 +184,31 @@ fn part2(input: &(Vec<Vec<u32>>, Point, Point)) -> i64 {
     part2_solver(26501365, 5, rocks, start, size)
 }
 
+#[aoc(day21, part2, alternative)]
+fn part2_alternative(input: &(Vec<Vec<u32>>, Point, Point)) -> usize {
+    // Based on https://www.reddit.com/r/adventofcode/comments/18nol3m/2023_day_21_a_geometric_solutionexplanation_for/
+    let (rocks, start, size) = input;
+
+    // Max amounts of steps in the grid are 130 bc manhattan distance 65 to both edges
+    let counts = solve(rocks, start, size, 130, false);
+
+    // We draw the diamond in the square take the corners of the square that are not inside the diamond
+    let even_corners = counts[66..].iter().step_by(2).sum::<i32>();
+    let odd_corners = counts[67..].iter().step_by(2).sum::<i32>();
+
+    let n = ((26501365 - (size.x / 2)) / size.x) as usize;
+
+    let even = n * n;
+    let odd = (n + 1) * (n + 1);
+
+    let result = odd * counts.iter().skip(1).step_by(2).sum::<i32>() as usize
+        + even * counts.iter().step_by(2).sum::<i32>() as usize
+        - ((n + 1) * odd_corners as usize)
+        + (n * even_corners as usize);
+    result
+}
+
+
 
 #[cfg(test)]
 mod tests {
