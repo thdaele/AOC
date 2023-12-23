@@ -56,9 +56,7 @@ fn solve(grid: &[&[u8]], start: Point, direction: Direction, size: (usize, usize
     let mut visited: FxHashSet<(Point, Direction)> = FxHashSet::default();
 
     while let Some((point, direction)) = queue.pop_front() {
-        if !visited.contains(&(point, direction)) {
-            visited.insert((point, direction));
-
+        if visited.insert((point, direction)) {
             let char = grid[point.y as usize][point.x as usize];
             match char {
                 b'/' => {
