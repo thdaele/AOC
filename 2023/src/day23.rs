@@ -1,7 +1,7 @@
-use std::cmp::{max, Reverse};
-use std::collections::{BinaryHeap, VecDeque};
+use std::cmp::max;
+use std::collections::VecDeque;
+
 use aoc_runner_derive::aoc;
-use num::abs;
 use rustc_hash::{FxHashMap, FxHashSet};
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Hash, Copy, Clone)]
@@ -88,37 +88,75 @@ fn find_start_end(grid: &Vec<&[u8]>) -> (Point, Point) {
     (start.unwrap(), end.unwrap())
 }
 
-// instead of copying seen, we can make it a boolean grid and set seen to true before recursive call
-// and back to false after the recursive call ends
-fn solve(grid: &[&[u8]], start: Point, end: Point, size: (usize, usize), part2: bool) -> u32 {
+fn solve(grid: &[&[u8]], start: Point, end: Point, size: (usize, usize)) -> u32 {
     debug_assert!(!grid.is_empty());
     let (y_len, x_len) = size;
 
+    let mut seen = vec![vec![false; x_len]; y_len];
+
+    solve_recursive(grid, &mut seen, start, end, 0, size)
+}
+
+fn solve_recursive(grid: &[&[u8]], seen: &mut Vec<Vec<bool>>, position: Point, end: Point, distance: u32, size: (usize, usize)) -> u32 {
+    let (y_len, x_len) = size;
+
+    if position == end {
+        return distance
+    }
+
     let mut result = 0;
+
+    let tile = grid[position.y as usize][position.x as usize];
+    let mut next_directions = Vec::with_capacity(4);
+    match tile {
+        b'^' => next_directions.push(Direction::North),
+        b'>' => next_directions.push(Direction::East),
+        b'v' => next_directions.push(Direction::South),
+        b'<' => next_directions.push(Direction::West),
+        _ => next_directions.extend([Direction::North, Direction::South, Direction::East, Direction::West])
+    }
+
+    let neighbours: Vec<Point> = next_directions.iter().filter_map(|&dir| {
+        let pos = position.update(y_len as u8, x_len as u8, dir);
+        if let Some(pos) = pos {
+            if grid[pos.y as usize][pos.x as usize] == b'#' {
+                return None
+            }
+            return Some(pos)
+        }
+        None
+    }).collect();
+
+    for neighbour in neighbours {
+        if !seen[neighbour.y as usize][neighbour.x as usize] {
+            seen[neighbour.y as usize][neighbour.x as usize] = true;
+            let dist = solve_recursive(grid, seen, neighbour, end, distance + 1, size);
+            result = max(result, dist);
+            seen[neighbour.y as usize][neighbour.x as usize] = false;
+        }
+    }
+    result
+}
+
+fn bfs(grid: &[&[u8]], poi: &FxHashSet<Point>, start: Point, size: (usize, usize)) -> Vec<(Point, u32)> {
+    debug_assert!(!grid.is_empty());
+    let (y_len, x_len) = size;
 
     let mut todo = VecDeque::new();
     let mut seen = FxHashSet::default();
+    let mut result = Vec::new();
 
+    todo.push_back((start, 0));
     seen.insert(start);
-    todo.push_back((0u32, start, seen));
 
-    while let Some((distance, position, seen)) = todo.pop_front() {
-        if position == end {
-            result = max(result, distance);
-            continue
+    while let Some((position, distance)) = todo.pop_front() {
+        if position != start && poi.contains(&position) {
+            result.push((position, distance));
+            continue;
         }
 
-        let tile = grid[position.y as usize][position.x as usize];
-        let mut next_directions = Vec::with_capacity(4);
-        match tile {
-            b'^' if !part2 => next_directions.push(Direction::North),
-            b'>' if !part2 => next_directions.push(Direction::East),
-            b'v' if !part2 => next_directions.push(Direction::South),
-            b'<' if !part2 => next_directions.push(Direction::West),
-            _ => next_directions.extend([Direction::North, Direction::South, Direction::East, Direction::West])
-        }
-
-        let neighbours: Vec<Point> = next_directions.iter().filter_map(|&dir| {
+        let directions = [Direction::North, Direction::South, Direction::East, Direction::West];
+        let neighbours: Vec<Point> = directions.iter().filter_map(|&dir| {
             let pos = position.update(y_len as u8, x_len as u8, dir);
             if let Some(pos) = pos {
                 if grid[pos.y as usize][pos.x as usize] == b'#' {
@@ -130,13 +168,70 @@ fn solve(grid: &[&[u8]], start: Point, end: Point, size: (usize, usize), part2: 
         }).collect();
 
         for neighbour in neighbours {
-            let mut seen_copy = seen.clone();
-            if seen_copy.insert(neighbour) {
-                todo.push_back((distance + 1, neighbour, seen_copy));
+            if seen.insert(neighbour) {
+                todo.push_back((neighbour, distance + 1));
             }
         }
     }
     result
+}
+
+fn solve_recursive_2(edges: &FxHashMap<&Point, Vec<(Point, u32)>>, seen: &mut FxHashMap<&Point, bool>, position: Point, end: Point, distance: u32) -> u32 {
+    if position == end {
+        return distance
+    }
+    let mut result = 0;
+
+    for &(next, extra) in &edges[&position] {
+        if !seen[&next] {
+            *seen.get_mut(&next).unwrap() = true;
+            let dist = solve_recursive_2(edges, seen, next, end, distance + extra);
+            result = max(result, dist);
+            *seen.get_mut(&next).unwrap() = false;
+        }
+    }
+    result
+}
+
+fn solve_2(grid: &[&[u8]], start: Point, end: Point, size: (usize, usize)) -> u32 {
+    debug_assert!(!grid.is_empty());
+    let (y_len, x_len) = size;
+
+    let mut poi = FxHashSet::default();
+    poi.insert(start);
+    poi.insert(end);
+
+    let directions = [Direction::North, Direction::South, Direction::East, Direction::West];
+    for y in 0..y_len {
+        for x in 0..x_len {
+            if grid[y][x] != b'#' {
+                let position = Point::new(y as u8, x as u8);
+                let neighbours = directions.iter().filter_map(|&dir| {
+                    let pos = position.update(y_len as u8, x_len as u8, dir);
+                    if let Some(pos) = pos {
+                        if grid[pos.y as usize][pos.x as usize] == b'#' {
+                            return None
+                        }
+                        return Some(pos)
+                    }
+                    None
+                }).count();
+                if neighbours > 2 {
+                    // Not in a corridor
+                    poi.insert(position);
+                }
+            }
+        }
+    }
+    let mut edges = FxHashMap::default();
+    let mut seen = FxHashMap::default();
+
+    for start in &poi {
+        edges.insert(start, bfs(grid, &poi, *start, size));
+        seen.insert(start, false);
+    }
+
+    solve_recursive_2(&edges, &mut seen, start, end, 0)
 }
 
 #[aoc(day23, part1)]
@@ -144,7 +239,7 @@ fn part1(input: &str) -> u32 {
     let (grid, size) = parse(input);
     let (start, end) = find_start_end(&grid);
 
-    solve(&grid, start, end, size, false)
+    solve(&grid, start, end, size)
 }
 
 #[aoc(day23, part2)]
@@ -152,7 +247,7 @@ fn part2(input: &str) -> u32 {
     let (grid, size) = parse(input);
     let (start, end) = find_start_end(&grid);
 
-    solve(&grid, start, end, size, true)
+    solve_2(&grid, start, end, size)
 }
 
 
