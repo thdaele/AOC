@@ -167,6 +167,7 @@ fn part2(hailstones: &[Hailstone]) -> f64 {
 
             if hailstone1.velocity.x == hailstone2.velocity.x {
                 let mut result = FxHashSet::default();
+                // DistanceDifference % (RockVelocity-HailVelocity) == 0
                 dx_candidate.iter().for_each(|&v| {
                     if v as f64 != hailstone1.velocity.x.round() && (hailstone1.position.x - hailstone2.position.x).rem_euclid(v as f64 - hailstone1.velocity.x).round() == 0f64 {
                         result.insert(v);
@@ -176,6 +177,7 @@ fn part2(hailstones: &[Hailstone]) -> f64 {
             }
             if hailstone1.velocity.y == hailstone2.velocity.y {
                 let mut result = FxHashSet::default();
+                // DistanceDifference % (RockVelocity-HailVelocity) == 0
                 dy_candidate.iter().for_each(|&v| {
                     if v as f64 != hailstone1.velocity.y.round() && (hailstone1.position.y - hailstone2.position.y).rem_euclid(v as f64 - hailstone1.velocity.y).round() == 0f64 {
                         result.insert(v);
@@ -185,6 +187,7 @@ fn part2(hailstones: &[Hailstone]) -> f64 {
             }
             if hailstone1.velocity.z == hailstone2.velocity.z {
                 let mut result = FxHashSet::default();
+                // DistanceDifference % (RockVelocity-HailVelocity) == 0
                 dz_candidate.iter().for_each(|&v| {
                     if v as f64 != hailstone1.velocity.z.round() && (hailstone1.position.z - hailstone2.position.z).rem_euclid(v as f64 - hailstone1.velocity.z).round() == 0f64 {
                         result.insert(v);
